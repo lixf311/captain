@@ -8,6 +8,7 @@ import (
 	"captain/pkg/bussiness/kube-resources/alpha1/cronjob"
 	"captain/pkg/bussiness/kube-resources/alpha1/daemonset"
 	"captain/pkg/bussiness/kube-resources/alpha1/deployment"
+	"captain/pkg/bussiness/kube-resources/alpha1/horizontalpodautoscaler"
 	"captain/pkg/bussiness/kube-resources/alpha1/ingress"
 	"captain/pkg/bussiness/kube-resources/alpha1/job"
 	"captain/pkg/bussiness/kube-resources/alpha1/limitrange"
@@ -38,32 +39,33 @@ import (
 )
 
 var (
-	NamespaceGVR             = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}
-	NodeGVR                  = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "nodes"}
-	ClusterroleGVR           = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "clusterroles"}
-	StorageclassGVR          = schema.GroupVersionResource{Group: "storage.k8s.io", Version: "v1", Resource: "storageclasses"}
-	PersistentvolumeGVR      = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "persistentvolumes"}
-	DeploymentGVR            = schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
-	StatefulsetGVR           = schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "statefulsets"}
-	PodGVR                   = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
-	JobGVR                   = schema.GroupVersionResource{Group: "batch", Version: "v1", Resource: "jobs"}
-	CronJobGVR               = schema.GroupVersionResource{Group: "batch", Version: "v1", Resource: "cronjobs"}
-	CronJobBatchV1beta1GVR   = schema.GroupVersionResource{Group: "batch", Version: "v1beta1", Resource: "cronjobsv1beta1"}
-	DaemonsetGVR             = schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "daemonsets"}
-	IngresseGVR              = schema.GroupVersionResource{Group: "networking.k8s.io", Version: "v1", Resource: "ingresses"}
-	IngresseV1beta1GVR       = schema.GroupVersionResource{Group: "extensions", Version: "v1beta1", Resource: "ingressesv1beta1"}
-	ServiceGVR               = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
-	ConfigmapGVR             = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "configmaps"}
-	PersistentvolumeClaimGVR = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "persistentvolumeclaims"}
-	SecretGVR                = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "secrets"}
-	ServiceaccountGVR        = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "serviceaccounts"}
-	RoleGVR                  = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "roles"}
-	ClusterrolebindingGVR    = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "clusterrolebindings"}
-	RolebindingGVR           = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "rolebindings"}
-	NetworkpolicieGVR        = schema.GroupVersionResource{Group: "networking.k8s.io", Version: "v1", Resource: "networkpolicies"}
-	ResourceQuotaGVR         = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "resourcequotas"}
-	LimitRangeGVR            = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "limitranges"}
-	ErrResourceNotSupported  = errors.New("resource is not supported")
+	NamespaceGVR                      = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "namespaces"}
+	NodeGVR                           = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "nodes"}
+	ClusterroleGVR                    = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "clusterroles"}
+	StorageclassGVR                   = schema.GroupVersionResource{Group: "storage.k8s.io", Version: "v1", Resource: "storageclasses"}
+	PersistentvolumeGVR               = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "persistentvolumes"}
+	DeploymentGVR                     = schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	StatefulsetGVR                    = schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "statefulsets"}
+	PodGVR                            = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
+	JobGVR                            = schema.GroupVersionResource{Group: "batch", Version: "v1", Resource: "jobs"}
+	CronJobGVR                        = schema.GroupVersionResource{Group: "batch", Version: "v1", Resource: "cronjobs"}
+	CronJobBatchV1beta1GVR            = schema.GroupVersionResource{Group: "batch", Version: "v1beta1", Resource: "cronjobsv1beta1"}
+	DaemonsetGVR                      = schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "daemonsets"}
+	IngresseGVR                       = schema.GroupVersionResource{Group: "networking.k8s.io", Version: "v1", Resource: "ingresses"}
+	IngresseV1beta1GVR                = schema.GroupVersionResource{Group: "extensions", Version: "v1beta1", Resource: "ingressesv1beta1"}
+	ServiceGVR                        = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "services"}
+	ConfigmapGVR                      = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "configmaps"}
+	PersistentvolumeClaimGVR          = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "persistentvolumeclaims"}
+	SecretGVR                         = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "secrets"}
+	ServiceaccountGVR                 = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "serviceaccounts"}
+	RoleGVR                           = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "roles"}
+	ClusterrolebindingGVR             = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "clusterrolebindings"}
+	RolebindingGVR                    = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "v1", Resource: "rolebindings"}
+	NetworkpolicieGVR                 = schema.GroupVersionResource{Group: "networking.k8s.io", Version: "v1", Resource: "networkpolicies"}
+	ResourceQuotaGVR                  = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "resourcequotas"}
+	LimitRangeGVR                     = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "limitranges"}
+	HorizontalpodautoscalerV2beta2GVR = schema.GroupVersionResource{Group: "autoscaling", Version: "v2beta2", Resource: "horizontalpodautoscalers"}
+	ErrResourceNotSupported           = errors.New("resource is not supported")
 )
 
 // ResourceProcessor ... processing resources including kube-native, sevice mesh , others kinds of cloud-native resources
@@ -105,6 +107,7 @@ func NewResourceProcessor(factory informers.CapInformerFactory, cache cache.Cach
 	namespacedResourceProcessors[NetworkpolicieGVR] = networkpolicy.New(factory.KubernetesSharedInformerFactory())
 	namespacedResourceProcessors[ResourceQuotaGVR] = resourcequota.New(factory.KubernetesSharedInformerFactory())
 	namespacedResourceProcessors[LimitRangeGVR] = limitrange.New(factory.KubernetesSharedInformerFactory())
+	namespacedResourceProcessors[HorizontalpodautoscalerV2beta2GVR] = horizontalpodautoscaler.New(factory.KubernetesSharedInformerFactory())
 
 	// multi cluster native kube resource
 	multiClusterResourceProcessors := make(map[schema.GroupVersionResource]alpha1.MultiClusterKubeResProvider)
@@ -135,7 +138,7 @@ func NewResourceProcessor(factory informers.CapInformerFactory, cache cache.Cach
 	multiClusterResourceProcessors[NetworkpolicieGVR] = networkpolicy.NewMCResProvider(clients)
 	multiClusterResourceProcessors[ResourceQuotaGVR] = resourcequota.NewMCResProvider(clients)
 	multiClusterResourceProcessors[LimitRangeGVR] = limitrange.NewMCResProvider(clients)
-
+	multiClusterResourceProcessors[HorizontalpodautoscalerV2beta2GVR] = horizontalpodautoscaler.NewMCResProvider(clients)
 	return &ResourceProcessor{
 		namespacedResourceProcessors:   namespacedResourceProcessors,
 		clusterResourceProcessors:      clusterResourceProcessors,
